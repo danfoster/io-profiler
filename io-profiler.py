@@ -13,7 +13,7 @@ def create_rrd(filename):
         output.append(o)
     output.append('RRA:AVERAGE:0.5:1:24')
     output.append('RRA:AVERAGE:0.5:6:48')
-    subprocess.check_output(output)
+    subprocess.Popen(' '.join(output),shell=True, stdout=subprocess.PIPE)
 
 while True:
     cmd = subprocess.Popen('./io-profiler.d', shell=True, stdout=subprocess.PIPE)
@@ -43,6 +43,6 @@ while True:
 
             if not os.path.isfile(filename):
                 create_rrd(filename)
-            output = subprocess.check_output(['rrdtool','update',filename,'--template',keys,values])
-            print output
+            c = ['rrdtool','update',filename,'--template',keys, values]
+            output = subprocess.Popen(' '.join(c),shell=True, stdout=subprocess.PIPE)
 
