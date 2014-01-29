@@ -3,11 +3,12 @@
 import subprocess
 import os
 
+RRDTOOL='/usr/local/rrdtool-1.2.19/bin/rrdtool'
 sizes = {}
 
 def create_rrd(filename):
-    output = ['rrdtool','create',filename]
-    for i in range(8,22):
+    output = [RRDTOOL,'create',filename]
+    for i in range(5,22):
         bin_ = 2**i
         o = "DS:"+str(bin_)+':GAUGE:600:U:U'
         output.append(o)
@@ -17,16 +18,12 @@ def create_rrd(filename):
 
 while True:
     cmd = subprocess.Popen('./io-profiler.d', shell=True, stdout=subprocess.PIPE)
-    for line in cmd.stdout:
-        disk = ""
-        # Get Disk Name
-        for line in cmd.stdout:
-            l = line.strip()
-            if len(l) > 0:
-                disk = l
-                break
+    cmd.stdout.next()
+    for line in cmd.stdout: 
+        disk = line.strip()
 
         if disk != "":
+	    disk = disk.replace('/','_')
             # Read and discard header line
             cmd.stdout.next()
 
@@ -39,10 +36,10 @@ while True:
             
             keys = ':'.join(sizes.keys())
             values = 'N:'+':'.join(sizes.values())
-            filename = 'rrds/iosize-'+disk+'.rrd'
+            filename = 'rrds/iosize'+disk+'.rrd'
 
             if not os.path.isfile(filename):
                 create_rrd(filename)
-            c = ['rrdtool','update',filename,'--template',keys, values]
+            c = [RRDTOOL,'update',filename,'--template',keys, values]
             output = subprocess.Popen(' '.join(c),shell=True, stdout=subprocess.PIPE)
 
