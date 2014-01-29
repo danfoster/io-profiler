@@ -8,7 +8,7 @@ sizes = {}
 
 def create_rrd(filename):
     output = [RRDTOOL,'create',filename]
-    for i in range(5,22):
+    for i in range(3,22):
         bin_ = 2**i
         o = "DS:read-"+str(bin_)+':GAUGE:600:U:U'
         output.append(o)
