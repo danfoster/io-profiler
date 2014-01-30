@@ -1,0 +1,2 @@
+iosize_devices_scsi_vhci_ssd@g(.*):.*,
+iosize_devices_pseudo_emcp@(.*):.*,emcpower

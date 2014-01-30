@@ -5,6 +5,7 @@ import os
 import calendar
 import time
 import re
+import platform
 
 colors = ['#EA644A','#CC3118','#EC9D48','#CC7016','#ECD748','#C9B215','#54EC48','#24BC14','#48C4EC','#1598C3','#DE48EC','#B415C7','#7648EC','#4D18E4']
 numcolors = len(colors)
@@ -14,9 +15,11 @@ totime = calendar.timegm(time.gmtime())
 fromtime = totime - 86400
 width=800
 height=800
+hostname=platform.node()
 
-def graph_rrd(filename,outputfilename):
-    output = ['rrdtool','graph',outputfilename,'--title',outputfilename,'-w',str(width),'-h',str(height),'--start', str(fromtime), '--end', str(totime)]
+def graph_rrd(filename,label):
+    outputfilename = 'images/'+hostname+"/"+label+'.png'
+    output = ['rrdtool','graph',outputfilename,'-v Write <-- blocks --> Read','--title',label,'-w',str(width),'-h',str(height),'--start', str(fromtime), '--end', str(totime)]
     count = 0
     stack = ""
     for i in range(12,22):
@@ -35,20 +38,33 @@ def graph_rrd(filename,outputfilename):
         stack = ":STACK"
     foo = subprocess.check_output(output)
 
-iscsi=re.compile('iosize_devices_scsi_vhci_ssd@g(.*):.*')
-powerpath=re.compile('iosize_devices_pseudo_emcp@(.*):.*')
+if not os.path.isdir("images/"+hostname):
+    os.makedirs("images/"+hostname)
+
+matches = {}
+with open('matches.map','r') as file:
+    for line in file:
+        items = line.split(',')
+        matches[re.compile(items[0])] = items[1].rstrip()
+
+maps = {}
+with open('maps.map','r') as file:
+    for line in file:
+        items = line.split(',')
+        maps[items[0].upper()] = items[1].rstrip()
 
 for file in os.listdir("rrds/"):
     if file.endswith(".rrd"):
-        m = iscsi.match(file)
-        if m:
-            filename = 'rrds/'+file.replace(':','\:')
-            outputfilename = 'images/'+m.group(1)+'.png'
-            graph_rrd(filename,outputfilename)
-        m = powerpath.match(file)
-        if m:
-            filename = 'rrds/'+file.replace(':','\:')
-            outputfilename = 'images/powerpath'+m.group(1)+'.png'
-            graph_rrd(filename,outputfilename)
+        for item in matches.keys():
+            m = item.match(file)
+            if m:
+                label = matches[item]+m.group(1)
+                label=label.upper()
+                if label in maps:
+                    label = maps[label]
+                label = label.replace('/','_')
+                print label
+                filename = 'rrds/'+file.replace(':','\:')
+                graph_rrd(filename,label)
 
 
