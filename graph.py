@@ -19,7 +19,7 @@ hostname=platform.node()
 
 def graph_rrd(filename,label):
     outputfilename = 'images/'+hostname+"/"+label+'.png'
-    output = ['rrdtool','graph',outputfilename,'-v Write <-- blocks --> Read','--title',label,'-w',str(width),'-h',str(height),'--start', str(fromtime), '--end', str(totime)]
+    output = ['rrdtool','graph',outputfilename,'-v "Write <-- blocks --> Read"','--title',label,'-w',str(width),'-h',str(height),'--start', str(fromtime), '--end', str(totime)]
     count = 0
     stack = ""
     for i in range(12,22):
@@ -36,7 +36,7 @@ def graph_rrd(filename,label):
         output.append(o)
         count = (count+1)%numcolors
         stack = ":STACK"
-    foo = subprocess.check_output(output)
+    foo = subprocess.Popen(output, stdout=subprocess.PIPE)
 
 if not os.path.isdir("images/"+hostname):
     os.makedirs("images/"+hostname)
@@ -63,7 +63,6 @@ for file in os.listdir("rrds/"):
                 if label in maps:
                     label = maps[label]
                 label = label.replace('/','_')
-                print label
                 filename = 'rrds/'+file.replace(':','\:')
                 graph_rrd(filename,label)
 
