@@ -12,14 +12,18 @@ numcolors = len(colors)
 
 sizes = {}
 totime = calendar.timegm(time.gmtime())
-fromtime = totime - 86400
+fromtime = {}
+fromtime['24h'] = totime - 86400
+fromtime['week'] = totime - 604800
+fromtime['month'] = totime - 2678400
+fromtime['year'] = totime - 22896000
 width=800
-height=800
+height=480
 hostname=platform.node()
 
-def graph_rrd(filename,label):
-    outputfilename = 'images/'+hostname+"/"+label+'.png'
-    output = ['rrdtool','graph',outputfilename,'-v "Write <-- blocks --> Read"','--title',label,'-w',str(width),'-h',str(height),'--start', str(fromtime), '--end', str(totime)]
+def graph_rrd(filename,label,period):
+    outputfilename = 'images/'+hostname+"/"+label+'-'+period+'.png'
+    output = ['rrdtool','graph',outputfilename,'-v "Write <-- blocks --> Read"','--title',label + "("+period+")",'-w',str(width),'-h',str(height),'--start', str(fromtime[period]), '--end', str(totime)]
     count = 0
     stack = ""
     for i in range(12,22):
@@ -64,6 +68,7 @@ for file in os.listdir("rrds/"):
                     label = maps[label]
                 label = label.replace('/','_')
                 filename = 'rrds/'+file.replace(':','\:')
-                graph_rrd(filename,label)
+		for j in fromtime.keys():
+			graph_rrd(filename,label,j)
 
 
