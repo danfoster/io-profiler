@@ -1,0 +1,24 @@
+#!/sbin/sh
+
+BASE_DIR=/opt/io-profiler
+
+case "$1" in 
+'start')
+
+        if [ -f ${BASE_DIR}/io-profiler.py ]; then
+		cd $BASE_DIR
+		nohup ./io-profiler.py &
+        fi      
+        ;;
+
+'stop')
+	/usr/bin/pkill -f -z global "python ./io-profiler.py"
+        ;;
+
+*)
+        echo "Usage: $0 { start | stop }"
+        exit 1
+        ;;
+esac
+exit 0
+
